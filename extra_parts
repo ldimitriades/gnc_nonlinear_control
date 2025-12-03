@@ -1,0 +1,106 @@
+#scipy.integrate.solve_ivp
+
+# Initial state: [theta1, theta2, theta3, theta1_dot, theta2_dot, theta3_dot]
+initial_deg = 25 #degrees
+initial_rad = math.radians(initial_deg)
+x0 = np.array((initial_rad, initial_rad, initial_rad, 0, 0, 0))
+theta_d_degrees = 0
+theta_d = math.radians(theta_d_degrees)
+theta_d_array = np.array((theta_d, theta_d, theta_d))
+theta = x0[0:3]
+theta_dot = x0[3:6]
+#for now, will need to do loop to do each manuever time frame and desired slew
+Mc = -Kp*(theta - theta_d_array) - Kd*theta_dot
+
+# Time span for simulation
+t_span = (0, 99.9)  # s
+t_eval = np.linspace(t_span[0], t_span[1], 999)  
+
+# Solve the system
+sol = solve_ivp(dynamics, t_span, x0, t_eval=t_eval)
+print(sol.y[3,-1])
+
+#SIMULATION 2 100-500S 70DEG
+theta_d_degrees = 70
+theta_d = math.radians(theta_d_degrees)
+theta_d_array = np.array((theta_d, theta_d, theta_d))
+x0 = np.array((sol.y[0,-1], sol.y[1,-1], sol.y[2,-1], sol.y[3,-1], sol.y[4,-1], sol.y[5,-1]))
+t_span = (100, 500)  # s
+t_eval = np.linspace(t_span[0], t_span[1], 4000)  
+sol_1 = solve_ivp(dynamics, t_span, x0, t_eval=t_eval)
+
+#SIMULATION 3 500.1S-900S -70DEG
+theta_d_degrees = -70
+theta_d = math.radians(theta_d_degrees)
+theta_d_array = np.array((theta_d, theta_d, theta_d))
+x0 = np.array((sol_1.y[0,-1], sol_1.y[1,-1], sol_1.y[2,-1], sol_1.y[3,-1], sol_1.y[4,-1], sol_1.y[5,-1]))
+t_span = (500.1, 900)  # s
+t_eval = np.linspace(t_span[0], t_span[1], 3999)  
+sol_2 = solve_ivp(dynamics, t_span, x0, t_eval=t_eval)
+
+#SIMULATION 4 900.1S-1500S 0DEG
+theta_d_degrees = 0
+theta_d = math.radians(theta_d_degrees)
+theta_d_array = np.array((theta_d, theta_d, theta_d))
+x0 = np.array((sol_2.y[0,-1], sol_2.y[1,-1], sol_2.y[2,-1], sol_2.y[3,-1], sol_2.y[4,-1], sol_2.y[5,-1]))
+t_span = (900.1, 1500)  # s
+t_eval = np.linspace(t_span[0], t_span[1], 5999)  
+sol_3 = solve_ivp(dynamics, t_span, x0, t_eval=t_eval)
+
+
+
+
+plt.figure(figsize=(10, 6))
+plt.plot(sol.t, np.rad2deg(sol.y[0]), label='θ1 (Roll)')
+plt.plot(sol.t, np.rad2deg(sol.y[1]), label='θ2 (Pitch)')
+plt.plot(sol.t, np.rad2deg(sol.y[2]), label='θ3 (Yaw)')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Attitude Angles vs. Time')
+plt.legend()
+plt.grid()
+plt.show(block=False)
+
+plt.figure(figsize=(10, 6))
+plt.plot(sol_1.t, np.rad2deg(sol_1.y[0]), label='θ1 (Roll)')
+plt.plot(sol_1.t, np.rad2deg(sol_1.y[1]), label='θ2 (Pitch)')
+plt.plot(sol_1.t, np.rad2deg(sol_1.y[2]), label='θ3 (Yaw)')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Attitude Angles vs. Time')
+plt.legend()
+plt.grid()
+plt.show(block=False)
+
+plt.figure(figsize=(10, 6))
+plt.plot(sol_2.t, np.rad2deg(sol_2.y[0]), label='θ1 (Roll)')
+plt.plot(sol_2.t, np.rad2deg(sol_2.y[1]), label='θ2 (Pitch)')
+plt.plot(sol_2.t, np.rad2deg(sol_2.y[2]), label='θ3 (Yaw)')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Attitude Angles vs. Time')
+plt.legend()
+plt.grid()
+plt.show(block=False)
+
+plt.figure(figsize=(10, 6))
+plt.plot(sol_3.t, np.rad2deg(sol_3.y[0]), label='θ1 (Roll)')
+plt.plot(sol_3.t, np.rad2deg(sol_3.y[1]), label='θ2 (Pitch)')
+plt.plot(sol_3.t, np.rad2deg(sol_3.y[2]), label='θ3 (Yaw)')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Attitude Angles vs. Time')
+plt.legend()
+plt.grid()
+plt.show(block=False)
+
+plt.figure(figsize=(10, 6))
+plt.plot(np.concatenate((sol.t, sol_1.t, sol_2.t, sol_3.t)),np.concatenate((np.rad2deg(sol.y[0]), np.rad2deg(sol_1.y[0]), np.rad2deg(sol_2.y[0]), np.rad2deg(sol_3.y[0]))), label='θ1 (Roll)')
+plt.plot(np.concatenate((sol.t, sol_1.t, sol_2.t, sol_3.t)),np.concatenate((np.rad2deg(sol.y[1]), np.rad2deg(sol_1.y[1]), np.rad2deg(sol_2.y[1]), np.rad2deg(sol_3.y[1]))), label='θ2 (Pitch)')
+plt.plot(np.concatenate((sol.t, sol_1.t, sol_2.t, sol_3.t)),np.concatenate((np.rad2deg(sol.y[2]), np.rad2deg(sol_1.y[2]), np.rad2deg(sol_2.y[2]), np.rad2deg(sol_3.y[2]))), label='θ3 (Yaw)')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (degrees)')
+plt.title('Attitude Angles vs. Time')
+plt.legend()
+plt.grid()
+plt.show(block=False)
